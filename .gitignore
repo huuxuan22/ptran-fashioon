@@ -1,0 +1,30 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.log
+
+# Node / frontend
+fe/node_modules/
+fe/.env
+fe/.env.*
+fe/.env.local
+fe/.env.development*
+fe/.env.production*
+fe/.env.test*
+
+# Gradle / Java
+.gradle/
+**/build/
+!be/fashion-be/build.gradle
+!be/fashion-be/settings.gradle
+
+# Backend sensitive configs
+be/fashion-be/src/main/resources/application.properties
+be/fashion-be/src/main/resources/application-*.properties
+
+# Misc
+.env
+.env.*
+
