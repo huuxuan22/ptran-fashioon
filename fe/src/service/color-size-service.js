@@ -1,10 +1,9 @@
-import axios from "axios";
-import { BASE_API_URL } from "../config/Config";
+import baseAxios from "./BaseAxios";
 
 export const getAllColor = async (token) => {
     try {
-        const res = await axios.get(
-            `${BASE_API_URL}/api/color`,
+        const res = await baseAxios.get(
+            `/api/color`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -24,8 +23,8 @@ export const getAllColor = async (token) => {
 
 export const getAllSize = async (token) => {
     try {
-        const res = await axios.get(
-            `${BASE_API_URL}/api/size`,
+        const res = await baseAxios.get(
+            `/api/size`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -1,42 +1,41 @@
-import axios from "axios";
-import { BASE_API_URL } from "../config/Config";
+import baseAxios from "./BaseAxios";
 
-export const getAllPage =async (data) => {
+export const getAllPage = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/get-page`, {
+        const res = await baseAxios.get(`/admin/product/get-page`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 };
 
-export const getDiscountProduct =async (data) => {
+export const getDiscountProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/discount-product`, {
+        const res = await baseAxios.get(`/admin/product/discount-product`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Danh sách sản phẩm giảm giá",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Danh sách sản phẩm giảm giá", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -46,23 +45,23 @@ export const getDiscountProduct =async (data) => {
  * @param {*} data 
  * @returns 
  */
-export const searchProduct =async (data) => {
+export const searchProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/search?page=${data.page}&size=${data.size}&value=${data.value}`, {
+        const res = await baseAxios.get(`/admin/product/search?page=${data.page}&size=${data.size}&value=${data.value}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Danh sách sản phẩm giảm giá",res.data);
-        
-        return {success: true, data: res.data}; 
+        });
+        console.log("Danh sách sản phẩm giảm giá", res.data);
+
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -71,22 +70,22 @@ export const searchProduct =async (data) => {
  * @param {*} data 
  * @returns 
  */
-export const getAllTotalPage =async (data) => {
+export const getAllTotalPage = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/totalPage?value=${data.value}`, {
+        const res = await baseAxios.get(`/admin/product/totalPage?value=${data.value}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -99,20 +98,20 @@ export const getAllTotalPage =async (data) => {
  */
 export const getProductStandOutNam = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/standOut-nam`, {
+        const res = await baseAxios.get(`/admin/product/standOut-nam`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -123,20 +122,20 @@ export const getProductStandOutNam = async (data) => {
  */
 export const getProductStandOutNu = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/standOut-nu`, {
+        const res = await baseAxios.get(`/admin/product/standOut-nu`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -149,20 +148,20 @@ export const getProductStandOutNu = async (data) => {
  */
 export const getAllImageProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/image?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/admin/product/image?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -175,20 +174,20 @@ export const getAllImageProduct = async (data) => {
  */
 export const getDetailProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/detail?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/admin/product/detail?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -200,20 +199,20 @@ export const getDetailProduct = async (data) => {
  */
 export const getSolidOfProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/solid?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/admin/product/solid?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -225,20 +224,20 @@ export const getSolidOfProduct = async (data) => {
  */
 export const getAllSizeOfOneProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/api/size/detail?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/api/size/detail?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -250,20 +249,20 @@ export const getAllSizeOfOneProduct = async (data) => {
  */
 export const getAllColorOfOneProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/api/color/detail?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/api/color/detail?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -275,20 +274,20 @@ export const getAllColorOfOneProduct = async (data) => {
  */
 export const countQuanlityWithSizeByColorId = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/api/color/select-color?productId=${data.productId}&colorId=${data.colorId}`, {
+        const res = await baseAxios.get(`/api/color/select-color?productId=${data.productId}&colorId=${data.colorId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
             }
-        } );
-        console.log("Số trang",res.data);
-        return {success: true, data: res.data}; 
+        });
+        console.log("Số trang", res.data);
+        return { success: true, data: res.data };
     } catch (error) {
         console.log("Lỗi khi createChat :", error);
         if (error.response) {
-            return {success: false,data: error.response.data}
-        }else {
-            return {success: false, data: "Lỗi ở server vui lòng truy cập lại"}
+            return { success: false, data: error.response.data }
+        } else {
+            return { success: false, data: "Lỗi ở server vui lòng truy cập lại" }
         }
     }
 }
@@ -305,7 +304,7 @@ export const getSameProduct = async (data) => {
     }
 
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/same?subCategoryId=${data.subCategoryId}&productId=${data.productId}`, {
+        const res = await baseAxios.get(`/admin/product/same?subCategoryId=${data.subCategoryId}&productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
@@ -329,7 +328,7 @@ export const getSameProduct = async (data) => {
  */
 export const getAllRatingByProductId = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/count?productId=${data.productId}`, {
+        const res = await baseAxios.get(`/admin/product/count?productId=${data.productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
@@ -354,7 +353,7 @@ export const getAllRatingByProductId = async (data) => {
  */
 export const getTopDealProduct = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/top-deal`, {
+        const res = await baseAxios.get(`/admin/product/top-deal`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
@@ -380,7 +379,7 @@ export const getTopDealProduct = async (data) => {
  */
 export const getProductWithCategories = async (data) => {
     try {
-        const res = await axios.get(`${BASE_API_URL}/admin/product/category`, {
+        const res = await baseAxios.get(`/admin/product/category`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
@@ -405,8 +404,8 @@ export const getProductWithCategories = async (data) => {
 export const selectProductByfeature = async (data) => {
     try {
         console.log("dữ liệu trước khi vào be: ", data);
-        
-        const res = await axios.get(`${BASE_API_URL}/api/users/find-product?categoryId=${data.categoryId !== null?data.categoryId : ""}&subCategoryId=${data.subCategoryId !== null ? data.subCategoryId : ""}&colorId=${data.colorId!==null ? data.colorId : ""}&sizeId=${data.sizeId!==null ? data.sizeId : ""}&sortBy=${data.sortBy!== null ? data.sortBy : ""}&size=${data.size}&page=${data.page}`, {
+
+        const res = await baseAxios.get(`/api/users/find-product?categoryId=${data.categoryId !== null ? data.categoryId : ""}&subCategoryId=${data.subCategoryId !== null ? data.subCategoryId : ""}&colorId=${data.colorId !== null ? data.colorId : ""}&sizeId=${data.sizeId !== null ? data.sizeId : ""}&sortBy=${data.sortBy !== null ? data.sortBy : ""}&size=${data.size}&page=${data.page}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
@@ -430,9 +429,9 @@ export const selectProductByfeature = async (data) => {
  */
 export const getPages = async (data) => {
     try {
-        console.log("dữ liệu số trang: ",data);
-        
-        const res = await axios.get(`${BASE_API_URL}/api/users/count-all-product?categoryId=${data.categoryId !== null ?data.categoryId : "" }&subCategoryId=${data.subCategoryId !== null ? data.subCategoryId : ""}&colorId=${data.colorId !== null ? data.colorId : ""}&sizeId=${data.sizeId !== null ? data.sizeId : "" }`, {
+        console.log("dữ liệu số trang: ", data);
+
+        const res = await baseAxios.get(`/api/users/count-all-product?categoryId=${data.categoryId !== null ? data.categoryId : ""}&subCategoryId=${data.subCategoryId !== null ? data.subCategoryId : ""}&colorId=${data.colorId !== null ? data.colorId : ""}&sizeId=${data.sizeId !== null ? data.sizeId : ""}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,

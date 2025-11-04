@@ -1,11 +1,15 @@
-import axios from "axios"
-import { BASE_API_URL } from "../config/Config"
+import baseAxios from "./BaseAxios"
 
 
 export const login = async (data) => {
     try {
         debugger;
-        const res = await axios.post(`${BASE_API_URL}/api/login`, data);
+        // Login không cần token, nên không truyền Authorization header
+        const res = await baseAxios.post(`/api/login`, data, {
+            headers: {
+                Authorization: undefined, // Không gửi token cho login
+            },
+        });
         return { success: true, data: res.data };
     } catch (error) {
         debugger;
@@ -25,7 +29,7 @@ export const register = async (data) => {
         const updatedGender = gender === 'male' ? true : false;
         // Cập nhật lại giá trị gender trong userDTO
         const updatedUserDTO = { ...userDTO, gender: updatedGender };
-        const res = await axios.put(`${BASE_API_URL}/api/register`, updatedUserDTO, {
+        const res = await baseAxios.put(`/api/register`, updatedUserDTO, {
             headers: {
                 'Content-Type': 'application/json', // Đảm bảo là gửi dưới dạng JSON
             },
@@ -43,7 +47,7 @@ export const register = async (data) => {
 
 export const saveAfterCheck = async (userDTO, code) => {
     try {
-        const res = await axios.post(`${BASE_API_URL}/api/save`,
+        const res = await baseAxios.post(`/api/save`,
             userDTO, // Đây là @RequestBody
             {
                 params: { code } // Đây là @RequestParam
@@ -61,7 +65,7 @@ export const saveAfterCheck = async (userDTO, code) => {
 
 export const sendCodeAgain = async (email) => {
     try {
-        const res = await axios.post(`${BASE_API_URL}/api/send-again?email=${email}`,);
+        const res = await baseAxios.post(`/api/send-again?email=${email}`,);
         return { success: true, data: res.data };
     } catch (error) {
         if (error.response) {
@@ -80,8 +84,8 @@ export const sendCodeAgain = async (email) => {
 export const logOut = async (token) => {
     try {
 
-        const res = await axios.post(
-            `${BASE_API_URL}/api/logout`,
+        const res = await baseAxios.post(
+            `/api/logout`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -1,10 +1,9 @@
-import axios from "axios";
-import { BASE_API_URL } from "../config/Config";
+import baseAxios from "./BaseAxios";
 
-export const updateUser = async (formData,token) => {
+export const updateUser = async (formData, token) => {
     try {
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/update-profile`,
+        const res = await baseAxios.post(
+            `/api/users/update-profile`,
             formData,
             {
                 headers: {
@@ -28,8 +27,8 @@ export const updateUser = async (formData,token) => {
 
 export const getAllAddressUser = async (token) => {
     try {
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/address`,
+        const res = await baseAxios.get(
+            `/api/users/address`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -50,10 +49,10 @@ export const getAllAddressUser = async (token) => {
 };
 
 
-export const addNewAddress = async (token,addressUserDTO) => {
+export const addNewAddress = async (token, addressUserDTO) => {
     try {
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/add-new-address`,addressUserDTO,
+        const res = await baseAxios.post(
+            `/api/users/add-new-address`, addressUserDTO,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -73,10 +72,10 @@ export const addNewAddress = async (token,addressUserDTO) => {
     }
 };
 
-export const updateAddress = async (token,addressUser) => {
+export const updateAddress = async (token, addressUser) => {
     try {
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/update-address`,addressUser,
+        const res = await baseAxios.post(
+            `/api/users/update-address`, addressUser,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -96,10 +95,10 @@ export const updateAddress = async (token,addressUser) => {
     }
 };
 
-export const deleteAddress = async (token,id) => {
+export const deleteAddress = async (token, id) => {
     try {
-        const res = await axios.delete(
-            `${BASE_API_URL}/api/users/delete?id=${id}`,
+        const res = await baseAxios.delete(
+            `/api/users/delete?id=${id}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -122,9 +121,9 @@ export const deleteAddress = async (token,id) => {
 export const changePassword = async (token, password) => {
     try {
         console.log(" dư lieeujL ", password);
-        
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/change-password?oldPassword=${password}`,
+
+        const res = await baseAxios.post(
+            `/api/users/change-password?oldPassword=${password}`,
             {}, // POST body rỗng
             {
                 headers: {
@@ -145,11 +144,11 @@ export const changePassword = async (token, password) => {
 };
 
 
-export const updatePassword = async (token, newPassword,code) => {
+export const updatePassword = async (token, newPassword, code) => {
     try {
-        
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/update-password?newPassword=${newPassword}&code=${code}`,
+
+        const res = await baseAxios.post(
+            `/api/users/update-password?newPassword=${newPassword}&code=${code}`,
             {}, // POST body rỗng
             {
                 headers: {
@@ -176,11 +175,11 @@ export const updatePassword = async (token, newPassword,code) => {
  * @param {*} code 
  * @returns 
  */
-export const getCoupon = async (token,code) => {
+export const getCoupon = async (token, code) => {
     try {
-        
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/get-coupon?code=${code}`,
+
+        const res = await baseAxios.get(
+            `/api/users/get-coupon?code=${code}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -206,11 +205,11 @@ export const getCoupon = async (token,code) => {
  * @param {*} code 
  * @returns 
  */
-export const getDeal = async (token,productId) => {
+export const getDeal = async (token, productId) => {
     try {
-        
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/get-deal?productId=${productId}`,
+
+        const res = await baseAxios.get(
+            `/api/users/get-deal?productId=${productId}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -238,11 +237,11 @@ export const getDeal = async (token,productId) => {
  * Lấy được mã giảm giá khi thanh toán 
 
  */
-export const decreaseCoupon = async (token,coupon) => {
+export const decreaseCoupon = async (token, coupon) => {
     try {
-        
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/decrease-coupon`,coupon,
+
+        const res = await baseAxios.post(
+            `/api/users/decrease-coupon`, coupon,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -265,9 +264,9 @@ export const decreaseCoupon = async (token,coupon) => {
 export const updateNotification = async (token) => {
     try {
         console.log("đã vào đây service");
-        
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/update-notification`,
+
+        const res = await baseAxios.get(
+            `/api/users/update-notification`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -291,9 +290,9 @@ export const updateNotification = async (token) => {
 export const getAllOrderUser = async (data) => {
     try {
         console.log("đã vào đây service");
-        
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/get-all-order?size=${data.size}&page=${data.page}`,
+
+        const res = await baseAxios.get(
+            `/api/users/get-all-order?size=${data.size}&page=${data.page}`,
             {
                 headers: {
                     Authorization: `Bearer ${data.token}`,
@@ -317,9 +316,9 @@ export const getAllOrderUser = async (data) => {
 export const countAllOrder = async (data) => {
     try {
         console.log("đã vào đây service");
-        
-        const res = await axios.get(
-            `${BASE_API_URL}/api/users/count-all-order`,
+
+        const res = await baseAxios.get(
+            `/api/users/count-all-order`,
             {
                 headers: {
                     Authorization: `Bearer ${data.token}`,
@@ -341,16 +340,16 @@ export const countAllOrder = async (data) => {
 
 export const cancelOrder = async (data) => {
     try {
-        const res = await axios.post(
-            `${BASE_API_URL}/api/users/cancel-order?orderId=${data.orderId}`,
-            {},{
-                headers: {
-                    Authorization: `Bearer ${data.token}`,
-                    "Content-Type": "application/json",
-                },
-            }
+        const res = await baseAxios.post(
+            `/api/users/cancel-order?orderId=${data.orderId}`,
+            {}, {
+            headers: {
+                Authorization: `Bearer ${data.token}`,
+                "Content-Type": "application/json",
+            },
+        }
         );
-        
+
         return { success: true, data: res.data };
     } catch (error) {
         if (error.response) {
@@ -365,16 +364,16 @@ export const cancelOrder = async (data) => {
 
 export const paymentVNPay = async (data) => {
     try {
-        const res = await axios.get(
-            `${BASE_API_URL}/api/payment/create-payment?money=${data.money}&orderInf=${data.orderInfor}`,
-            {},{
-                headers: {
-                    Authorization: `Bearer ${data.token}`,
-                    "Content-Type": "application/json",
-                },
-            }
+        const res = await baseAxios.get(
+            `/api/payment/create-payment?money=${data.money}&orderInf=${data.orderInfor}`,
+            {}, {
+            headers: {
+                Authorization: `Bearer ${data.token}`,
+                "Content-Type": "application/json",
+            },
+        }
         );
-        
+
         return { success: true, data: res.data };
     } catch (error) {
         if (error.response) {

@@ -1,11 +1,10 @@
-import axios from "axios";
-import { BASE_API_URL } from "../config/Config";
+import baseAxios from "./BaseAxios";
 
-export const addProduct = async (orderDetailDTO,productDetailDTO,token) => {
+export const addProduct = async (orderDetailDTO, productDetailDTO, token) => {
     try {
-        const res = await axios.post(
-            `${BASE_API_URL}/api/order/create`,
-            orderDetailDTO,productDetailDTO,
+        const res = await baseAxios.post(
+            `/api/order/create`,
+            orderDetailDTO, productDetailDTO,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -25,12 +24,12 @@ export const addProduct = async (orderDetailDTO,productDetailDTO,token) => {
     }
 };
 
-export const deleteCart = async (cartId,token) => {
+export const deleteCart = async (cartId, token) => {
     try {
         console.log("hehehehe");
-        
-        const res = await axios.post(
-            `${BASE_API_URL}/api/order/cart`,cartId,
+
+        const res = await baseAxios.post(
+            `/api/order/cart`, cartId,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

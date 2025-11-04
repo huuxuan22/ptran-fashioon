@@ -46,6 +46,7 @@ import CouponDetailPage from "./pages/coupoun-detail/CouponDetail.jsx";
 import CreateCollectionPage from "./component/CreateCollection.jsx";
 import CollectionDetail from "./pages/collection-detail/CollectionDetail.jsx";
 import PaymentResult from "./features/PaymentResult.jsx";
+import Forbidden403 from "./pages/403/Forbidden403.jsx";
 function App() {
   const [showFooter, setShowFooter] = useState(true);
   return (
@@ -53,6 +54,7 @@ function App() {
       <Box component="main" sx={{ flex: 1 }}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/403" element={<Forbidden403 />} />
           <Route path="/" element={<HomePage />}></Route>
           <Route path="/coupon-detail" element={<CouponDetailPage />}></Route>
           <Route path="/collection-detail" element={<CollectionDetail />}></Route>
@@ -66,10 +68,10 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/comment" element={<ProductComment/>}></Route>
+          <Route path="/comment" element={<ProductComment />}></Route>
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/order-detail" element={<OrderDetailPage />} />
-          
+
           <Route path="/product-detail" element={<ProductDetail />} />
           <Route path="/product-page" element={<ProductPage />} />
           {/* cái này là xổ xuống  khi chọn category ở header */}
@@ -88,8 +90,8 @@ function App() {
           <Route path="/verify-code" element={<VerifyCode />} />
           <Route path="/enter-email-verify" element={<EnterEmailVerify />} />
 
-          <Route path="/admin" element= {<SideBarAdmin/>}>
-          {/* <Route path="create-coupon" element={<CreateCoupon />}></Route>
+          <Route path="/admin" element={<SideBarAdmin />}>
+            {/* <Route path="create-coupon" element={<CreateCoupon />}></Route>
           <Route path="seller" element={<SellerTable />}></Route>
           <Route path="transaction" element={<Transaction />}></Route>
           <Route path="order" element={<OrderManagement />}></Route>
