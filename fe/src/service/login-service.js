@@ -1,46 +1,36 @@
 import baseAxios from "./BaseAxios"
 
 
-/**
- * Login API với xử lý error rõ ràng
- * 
- * Response types từ backend:
- * - 200 OK: String token
- * - 400 BAD_REQUEST: LoginErrors { username?: string, password?: string }
- * - 401 UNAUTHORIZED: ErrorRespones { message: string, status: number }
- * - 500 INTERNAL_SERVER_ERROR: ErrorRespones { message: string, status: number }
- */
 export const login = async (data) => {
     try {
-        // Login không cần token, nên không truyền Authorization header
+        debugger;
         const res = await baseAxios.post(`/api/login`, data, {
             headers: {
                 Authorization: undefined, // Không gửi token cho login
             },
         });
+        debugger;
 
-        // Success: backend trả về token string
         return {
             success: true,
-            data: res.data, // Token string
-            token: res.data
+            data: res.data,
+            token: res.data.token,
+            user: res.data.user
         };
     } catch (error) {
         if (error.response) {
             const status = error.response.status;
             const errorData = error.response.data;
 
-            // 400 BAD_REQUEST: Validation errors (LoginErrors)
             if (status === 400) {
                 return {
                     success: false,
                     errorType: 'validation',
-                    data: errorData, // { username?: string, password?: string }
+                    data: errorData,
                     status: status
                 };
             }
 
-            // 401 UNAUTHORIZED: Authentication error (ErrorRespones)
             if (status === 401) {
                 return {
                     success: false,
@@ -51,7 +41,6 @@ export const login = async (data) => {
                 };
             }
 
-            // 500 INTERNAL_SERVER_ERROR: Server error (ErrorRespones)
             if (status === 500) {
                 return {
                     success: false,
@@ -62,7 +51,6 @@ export const login = async (data) => {
                 };
             }
 
-            // Other errors
             return {
                 success: false,
                 errorType: 'unknown',
@@ -83,14 +71,12 @@ export const login = async (data) => {
 
 export const register = async (data) => {
     try {
-        const { confirmPassword, gender, ...userDTO } = data; // Loại bỏ confirmPassword
-        // Chuyển đổi gender thành true nếu là male, ngược lại false
+        const { confirmPassword, gender, ...userDTO } = data;
         const updatedGender = gender === 'male' ? true : false;
-        // Cập nhật lại giá trị gender trong userDTO
         const updatedUserDTO = { ...userDTO, gender: updatedGender };
         const res = await baseAxios.put(`/api/register`, updatedUserDTO, {
             headers: {
-                'Content-Type': 'application/json', // Đảm bảo là gửi dưới dạng JSON
+                'Content-Type': 'application/json',
             },
         });
 
@@ -104,20 +90,48 @@ export const register = async (data) => {
     }
 };
 
-export const saveAfterCheck = async (userDTO, code) => {
+
+export const saveAfterCheck = async (email, code) => {
     try {
-        const res = await baseAxios.post(`/api/save`,
-            userDTO, // Đây là @RequestBody
-            {
-                params: { code } // Đây là @RequestParam
+        const res = await baseAxios.post(`/api/save`, null, {
+            params: {
+                email: email,
+                code: code
             }
-        );
-        return { success: true, data: res.data };
+        });
+
+        return {
+            success: true,
+            data: res.data,
+            token: res.data
+        };
     } catch (error) {
         if (error.response) {
-            return { success: false, data: error.response.data };
+            const status = error.response.status;
+            const errorData = error.response.data;
+
+            if (status === 400) {
+                return {
+                    success: false,
+                    errorType: 'validation',
+                    message: errorData || 'Mã xác thực không đúng hoặc đã hết hạn',
+                    data: errorData
+                };
+            }
+
+            return {
+                success: false,
+                errorType: 'server',
+                message: errorData || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.',
+                data: errorData
+            };
         } else {
-            return { success: false, data: "Lỗi máy chủ, vui lòng thử lại!" };
+            return {
+                success: false,
+                errorType: 'network',
+                message: 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.',
+                data: "Lỗi máy chủ, vui lòng thử lại!"
+            };
         }
     }
 }
@@ -142,12 +156,19 @@ export const sendCodeAgain = async (email) => {
  */
 export const logOut = async (token) => {
     try {
+        // Lấy token từ localStorage nếu không có trong param
+        const authToken = token || localStorage.getItem("token");
+
+        if (!authToken) {
+            return { success: true, data: "Đã đăng xuất" };
+        }
 
         const res = await baseAxios.post(
             `/api/logout`,
+            {},
             {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${authToken}`,
                     "Content-Type": "application/json",
                 },
             }
@@ -155,10 +176,10 @@ export const logOut = async (token) => {
         return { success: true, data: res.data };
     } catch (error) {
         if (error.response) {
-            console.log(error.response.data);
-            return { success: false, data: error.response.data };
+            console.log("Logout API error:", error.response.data);
+            return { success: true, data: "Đã đăng xuất" };
         } else {
-            return { success: false, data: "Lỗi máy chủ, vui lòng thử lại!" };
+            return { success: true, data: "Đã đăng xuất" };
         }
     }
 };

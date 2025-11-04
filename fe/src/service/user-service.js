@@ -144,12 +144,14 @@ export const changePassword = async (token, password) => {
 };
 
 
-export const updatePassword = async (token, newPassword, code) => {
+/**
+ * Gửi mã OTP cho change password
+ */
+export const sendCodeForPasswordChange = async (token) => {
     try {
-
         const res = await baseAxios.post(
-            `/api/users/update-password?newPassword=${newPassword}&code=${code}`,
-            {}, // POST body rỗng
+            `/api/users/send-code-password`,
+            {},
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -160,7 +162,6 @@ export const updatePassword = async (token, newPassword, code) => {
         return { success: true, data: res.data };
     } catch (error) {
         if (error.response) {
-            console.log(error.response.data);
             return { success: false, data: error.response.data };
         } else {
             return { success: false, data: "Lỗi máy chủ, vui lòng thử lại!" };
@@ -168,13 +169,53 @@ export const updatePassword = async (token, newPassword, code) => {
     }
 };
 
-
 /**
- * Lấy được mã giảm giá khi thanh toán 
- * @param {} token 
- * @param {*} code 
- * @returns 
+ * Cập nhật mật khẩu sau khi verify OTP
  */
+export const updatePassword = async (token, newPassword, code) => {
+    try {
+        const res = await baseAxios.post(
+            `/api/users/update-password?newPassword=${newPassword}&code=${code}`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return { success: true, data: res.data, token: res.data };
+    } catch (error) {
+        if (error.response) {
+            const status = error.response.status;
+            const errorData = error.response.data;
+
+            if (status === 400) {
+                return {
+                    success: false,
+                    errorType: 'validation',
+                    message: errorData || 'Mã xác thực không đúng hoặc đã hết hạn',
+                    data: errorData
+                };
+            }
+
+            return {
+                success: false,
+                errorType: 'server',
+                message: errorData || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.',
+                data: errorData
+            };
+        } else {
+            return {
+                success: false,
+                errorType: 'network',
+                message: 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.',
+                data: "Lỗi máy chủ, vui lòng thử lại!"
+            };
+        }
+    }
+};
+
 export const getCoupon = async (token, code) => {
     try {
 

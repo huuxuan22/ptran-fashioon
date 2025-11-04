@@ -1,4 +1,4 @@
-package com.example.projectc1023i1.service;
+package com.example.projectc1023i1.mapper;
 
 import com.example.projectc1023i1.respone.errorsValidate.LoginErrors;
 import com.example.projectc1023i1.respone.errorsValidate.RegisterErrors;
@@ -23,41 +23,40 @@ public class ValidationErrorMapper {
     private final Map<String, BiConsumer<RegisterErrors, String>> registerErrorMappers;
     
     public ValidationErrorMapper() {
+        // Khởi tạo Map cho LoginErrors
         this.loginErrorMappers = new HashMap<>();
-        this.loginErrorMappers.put("username", (errors, message) -> 
+        this.loginErrorMappers.put("username", (errors, message) ->
             errors.setUsername(appendMessage(errors.getUsername(), message))
         );
-        this.loginErrorMappers.put("password", (errors, message) -> 
+        this.loginErrorMappers.put("password", (errors, message) ->
             errors.setPassword(appendMessage(errors.getPassword(), message))
         );
-        
+
+        // Khởi tạo Map cho RegisterErrors
         this.registerErrorMappers = new HashMap<>();
-        this.registerErrorMappers.put("username", (errors, message) -> 
+        this.registerErrorMappers.put("username", (errors, message) ->
             errors.setUsername(appendMessage(errors.getUsername(), message))
         );
-        this.registerErrorMappers.put("password", (errors, message) -> 
+        this.registerErrorMappers.put("password", (errors, message) ->
             errors.setPassword(appendMessage(errors.getPassword(), message))
         );
-        this.registerErrorMappers.put("email", (errors, message) -> 
+        this.registerErrorMappers.put("email", (errors, message) ->
             errors.setEmail(appendMessage(errors.getEmail(), message))
         );
-        this.registerErrorMappers.put("fullName", (errors, message) -> 
+        this.registerErrorMappers.put("fullName", (errors, message) ->
             errors.setFullName(appendMessage(errors.getFullName(), message))
         );
-        this.registerErrorMappers.put("gender", (errors, message) -> 
+        this.registerErrorMappers.put("gender", (errors, message) ->
             errors.setGender(appendMessage(errors.getGender(), message))
         );
-        this.registerErrorMappers.put("numberphone", (errors, message) -> 
+        this.registerErrorMappers.put("numberphone", (errors, message) ->
             errors.setNumberphone(appendMessage(errors.getNumberphone(), message))
         );
-        this.registerErrorMappers.put("birthday", (errors, message) -> 
+        this.registerErrorMappers.put("birthday", (errors, message) ->
             errors.setBirthday(appendMessage(errors.getBirthday(), message))
         );
     }
     
-    /**
-     * Map BindingResult sang LoginErrors
-     */
     public LoginErrors mapToLoginErrors(BindingResult bindingResult) {
         LoginErrors loginErrors = new LoginErrors();
         

@@ -23,7 +23,7 @@ const ChangePassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const onSubmit = async (data) => {
     console.log(users);
-    
+
     if (isSubmitting) return; // Ngăn không cho gửi nhiều lần
     setIsSubmitting(true); // Bắt đầu gửi
     try {
@@ -32,16 +32,21 @@ const ChangePassword = () => {
         data.oldPassword
       );
       if (checkPassword.success) {
-        await loginService.sendCodeAgain(users.currentUser.email).then((dataCheck) => {
+        // Gửi mã OTP cho change password
+        const sendCodeResponse = await userService.sendCodeForPasswordChange(token);
+        if (sendCodeResponse.success) {
           navigate(`/verify-code`, {
             state: {
               account: {
-                email: users.email,
+                email: users.currentUser?.email || users.email,
                 newPassword: data.newPassword,
               },
             },
           });
-        });
+        } else {
+          // Hiển thị lỗi nếu không gửi được mã
+          console.error("Lỗi khi gửi mã:", sendCodeResponse.data);
+        }
       }
     } catch (error) {
 
