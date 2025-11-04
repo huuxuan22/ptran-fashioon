@@ -98,54 +98,58 @@ const Register = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`; // Định dạng dd-MM-yyyy
   };
-  const onSubmit = async (data) => {
-    const formattedBirthday = formatBirthday(data.birthday);
-    data.birthday = formattedBirthday;
+  const onSubmit = async (formData) => {
+    const formattedBirthday = formatBirthday(formData.birthday);
+    formData.birthday = formattedBirthday;
     if (isSubmitting) return; // Nếu đang submit, không cho phép submit lại
     setIsSubmitting(true); // Đặt trạng thái là đang submit
     try {
       console.log("đã đi vào đây");
-      await loginService.register(data).then((data) => {
-        if (!data.success) {
-          if (data.data.fullName) {
+      // Lưu email để truyền sang verify-code page
+      const userEmail = formData.email;
+
+      await loginService.register(formData).then((response) => {
+        if (!response.success) {
+          if (response.data.fullName) {
             setError("fullName", {
               type: "manual",
-              message: data.data.fullName, // Gán thông báo lỗi từ API
+              message: response.data.fullName, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.gender) {
+          } else if (response.data.gender) {
             setError("gender", {
               type: "manual",
-              message: data.data.gender, // Gán thông báo lỗi từ API
+              message: response.data.gender, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.numberphone) {
+          } else if (response.data.numberphone) {
             setError("numberphone", {
               type: "manual",
-              message: data.data.numberphone, // Gán thông báo lỗi từ API
+              message: response.data.numberphone, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.birthday) {
+          } else if (response.data.birthday) {
             setError("birthday", {
               type: "manual",
-              message: data.data.birthday, // Gán thông báo lỗi từ API
+              message: response.data.birthday, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.password) {
+          } else if (response.data.password) {
             setError("password", {
               type: "manual",
-              message: data.data.password, // Gán thông báo lỗi từ API
+              message: response.data.password, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.email) {
+          } else if (response.data.email) {
             setError("email", {
               type: "manual",
-              message: data.data.email, // Gán thông báo lỗi từ API
+              message: response.data.email, // Gán thông báo lỗi từ API
             });
-          } else if (data.data.username) {
+          } else if (response.data.username) {
             setError("username", {
               type: "manual",
-              message: data.data.username, // Gán thông báo lỗi từ API
+              message: response.data.username, // Gán thông báo lỗi từ API
             });
           }
         } else {
           console.log("đã đi vào");
-          navigate("/verify-code", { state: { userDTO: data.data } });
+          // Chỉ truyền email từ form data thay vì toàn bộ userDTO
+          navigate("/verify-code", { state: { email: userEmail } });
         }
       });
     } catch (error) {

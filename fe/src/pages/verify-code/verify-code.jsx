@@ -4,60 +4,159 @@ import "./verify-code.css";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as loginService from "./../../service/login-service";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons"; // Thêm import này
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import * as userService from "./../../service/user-service";
-import { Token } from '@mui/icons-material';
+import { useDispatch, useSelector } from "react-redux";
+import { setToken, setUserPrincipal } from "../../redux/User/Action";
+import { currentUser } from "../../redux/User/Action";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const VerifyCode = () => {
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [code, setCode] = useState("");
   const location = useLocation();
-  const userDTO = location.state?.userDTO || {};
-  const account = location.state.account  || {}; 
+  const email = location.state?.email || "";
+  const account = location.state?.account || {};
   const [showErrors, setShowErrors] = useState(false);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // Thêm state cho thông báo thành công
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { users } = useSelector((store) => store);
   const token = localStorage.getItem("token");
-  const handleChange = (e, index) => {
-    const newCode = [...code];
-    newCode[index] = e.target.value;
-    setCode(newCode);
 
-    if (e.target.value.length === 1 && index < 5) {
-      document.getElementById(`code-input-${index + 1}`).focus();
+  const handleChange = (e) => {
+    const value = e.target.value;
+    // Chỉ cho phép nhập số và tối đa 6 ký tự
+    if (/^\d*$/.test(value) && value.length <= 6) {
+      setCode(value);
+      setShowErrors(false);
+      setError("");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const verificationCode = code.join("");
+
+    // Kiểm tra nếu chưa điền đủ 6 số
+    if (!code || code.length !== 6) {
+      setShowErrors(true);
+      setError("Vui lòng nhập đầy đủ 6 số mã xác thực");
+      return;
+    }
+
+    const verificationCode = code;
+    setIsSubmitting(true);
+    setShowErrors(false);
+    setError("");
 
     try {
-      const response = null;
-      if (account) {
-        response = await userService.updatePassword(token, account.newPassword,verificationCode);
+      let response = null;
+
+      // Xử lý 2 luồng: Register và Change Password
+      if (account && account.newPassword) {
+        // Luồng 1: Đổi mật khẩu
+        if (!token) {
+          setShowErrors(true);
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        response = await userService.updatePassword(token, account.newPassword, verificationCode);
+
+        if (!response.success) {
+          setShowErrors(true);
+          setError(response.data || "Mã xác thực không đúng hoặc đã hết hạn");
+          setCode("");
+          if (document.getElementById("code-input")) {
+            document.getElementById("code-input").focus();
+          }
+        } else {
+          // Đổi mật khẩu thành công - cập nhật token mới
+          const newToken = response.data; // Backend trả về JWT token mới
+          localStorage.setItem("token", newToken);
+          dispatch(setToken(newToken));
+
+          // Cập nhật thông tin user
+          try {
+            const userResponse = await dispatch(currentUser());
+            if (userResponse?.payload) {
+              localStorage.setItem("user_principal", JSON.stringify(userResponse.payload));
+              dispatch(setUserPrincipal(userResponse.payload));
+            }
+          } catch (userError) {
+            console.error("Error fetching user info:", userError);
+          }
+
+          // Hiển thị thông báo thành công
+          toast.success("Đổi mật khẩu thành công!", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+
+          // Chuyển về trang profile hoặc trang trước
+          setTimeout(() => {
+            navigate("/profile");
+          }, 1500);
+        }
       } else {
-        response = await loginService.saveAfterCheck(
-        userDTO,
-        verificationCode
-      );
-      }
-      if (!response.success) {
-        setShowErrors(true);
-        setError(response.data);
-        setCode(["", "", "", "", "", ""]);
-        document.getElementById("code-input-0").focus();
-      } else {
-        localStorage.setItem("token", response.data);
-      }
-      if (account) {
-        navigate(-2)
-      }else {
-        navigate("/");
+        // Luồng 2: Đăng ký tài khoản mới
+        if (!email) {
+          setShowErrors(true);
+          setError("Không tìm thấy thông tin email. Vui lòng đăng ký lại.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        response = await loginService.saveAfterCheck(email, verificationCode);
+
+        if (!response.success) {
+          setShowErrors(true);
+          setError(response.message || response.data || "Mã xác thực không đúng hoặc đã hết hạn");
+          setCode("");
+          if (document.getElementById("code-input")) {
+            document.getElementById("code-input").focus();
+          }
+        } else {
+          // Đăng ký thành công - lưu token và user info
+          const jwtToken = response.token || response.data;
+          localStorage.setItem("token", jwtToken);
+          dispatch(setToken(jwtToken));
+
+          // Lấy thông tin user và lưu vào Redux
+          try {
+            const userResponse = await dispatch(currentUser());
+            if (userResponse?.payload) {
+              localStorage.setItem("user_principal", JSON.stringify(userResponse.payload));
+              dispatch(setUserPrincipal(userResponse.payload));
+            }
+          } catch (userError) {
+            console.error("Error fetching user info:", userError);
+          }
+
+          // Hiển thị thông báo thành công
+          toast.success("Đăng ký tài khoản thành công!", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+
+          // Chuyển hướng về trang chủ
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
+        }
       }
     } catch (err) {
       console.error("Verification error:", err);
       setShowErrors(true);
-      setError("An error occurred during verification");
+      setError("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+      setCode("");
+      if (document.getElementById("code-input")) {
+        document.getElementById("code-input").focus();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const [isResending, setIsResending] = useState(false); // Thêm state này cùng với các state khác
@@ -68,21 +167,45 @@ const VerifyCode = () => {
       setError("");
       setSuccessMessage("");
 
-      const response = await loginService.sendCodeAgain(userDTO.email);
-      console.log("email: ", userDTO.email);
+      // Xử lý send code again cho cả 2 luồng
+      if (account && account.newPassword) {
+        // Luồng 1: Change password - gọi endpoint riêng
+        if (!token) {
+          setShowErrors(true);
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          setIsResending(false);
+          return;
+        }
 
-      if (!response.success) {
-        setShowErrors(true);
-        setError(response.data);
+        const response = await userService.sendCodeForPasswordChange(token);
+        if (!response.success) {
+          setShowErrors(true);
+          setError(response.data || "Không thể gửi mã xác thực. Vui lòng thử lại.");
+        } else {
+          setSuccessMessage("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra.");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 5000);
+        }
       } else {
-        setSuccessMessage(
-          "New verification code has been sent to your email. Please check and enter the correct code."
-        );
+        // Luồng 2: Register - gọi endpoint send-again
+        if (!email) {
+          setShowErrors(true);
+          setError("Không tìm thấy thông tin email. Vui lòng đăng ký lại.");
+          setIsResending(false);
+          return;
+        }
 
-        // Tự động ẩn thông báo sau 5 giây
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 5000);
+        const response = await loginService.sendCodeAgain(email);
+        if (!response.success) {
+          setShowErrors(true);
+          setError(response.data);
+        } else {
+          setSuccessMessage("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra.");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 5000);
+        }
       }
     } catch (err) {
       console.error("Resend code error:", err);
@@ -95,6 +218,7 @@ const VerifyCode = () => {
 
   return (
     <div className="verify-code">
+      <ToastContainer />
       <img
         src="https://watermark.lovepik.com/photo/20211124/large/lovepik-fashion-womens-summer-shopping-image-picture_500961857.jpg"
         alt="background"
@@ -113,7 +237,7 @@ const VerifyCode = () => {
           <div>
             <span>
               A verification code has been sent to <br />
-              {userDTO?.email || "tranduonghuuxuan22@gmail.com"}
+              {email || account?.email || "tranduonghuuxuan22@gmail.com"}
             </span>
           </div>
 
@@ -126,24 +250,33 @@ const VerifyCode = () => {
 
           <div className="row">
             <div className="col-lg-4"></div>
-            <div className="col-lg-4 code-inputs">
-              {code.map((value, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  id={`code-input-${index}`}
-                  maxLength="1"
-                  value={value}
-                  onChange={(e) => handleChange(e, index)}
-                  className="verify-input"
-                  style={{
-                    borderColor: showErrors ? "#ff0000" : "#00917b",
-                    color: "#00917b",
-                    backgroundColor: showErrors ? "#fff0f0" : "white",
-                  }}
-                  autoFocus={index === 0}
-                />
-              ))}
+            <div className="col-lg-4">
+              <input
+                type="text"
+                id="code-input"
+                maxLength="6"
+                value={code}
+                onChange={handleChange}
+                placeholder="Nhập mã xác thực 6 số"
+                className="verify-input-single"
+                style={{
+                  borderColor: showErrors ? "#ff0000" : "#00917b",
+                  color: "#00917b",
+                  backgroundColor: showErrors ? "#fff0f0" : "white",
+                  width: "100%",
+                  padding: "15px",
+                  fontSize: "24px",
+                  textAlign: "center",
+                  letterSpacing: "8px",
+                  fontFamily: "'Courier New', monospace",
+                  fontWeight: "bold",
+                  borderRadius: "8px",
+                  border: "2px solid",
+                  outline: "none",
+                  transition: "all 0.3s ease",
+                }}
+                autoFocus
+              />
             </div>
             <div className="col-lg-4"></div>
           </div>
@@ -188,14 +321,28 @@ const VerifyCode = () => {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             style={{
-              backgroundColor: "#00917b",
+              backgroundColor: isSubmitting ? "#ccc" : "#00917b",
               color: "white",
               border: "none",
               marginTop: "15px",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              opacity: isSubmitting ? 0.6 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
             }}
           >
-            Verify
+            {isSubmitting ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin />
+                Đang xử lý...
+              </>
+            ) : (
+              "Xác thực"
+            )}
           </button>
 
           <div className="action-other">

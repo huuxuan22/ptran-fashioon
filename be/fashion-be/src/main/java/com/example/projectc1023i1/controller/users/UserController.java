@@ -205,27 +205,41 @@ public class UserController {
         }
     }
 
+
+    @PostMapping("/send-code-password")
+    public ResponseEntity<?> sendCodeForPasswordChange(@AuthenticationPrincipal Users users) {
+        try {
+            verificationService.sendVerificationCodeForPasswordChange(users.getEmail());
+            return ResponseEntity.ok("Mã xác thực đã được gửi đến email: " + users.getEmail());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi gửi mã xác thực: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/update-password")
     public ResponseEntity<?> updatePassword (@AuthenticationPrincipal Users users,
                                              @RequestParam("newPassword") String newPassword,
                                              @RequestParam("code") String code) {
-        boolean flag = verificationService.verifyCode(users.getEmail(), code);
-        if (!flag) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("mã xác thực không đúng");
+        // Verify OTP code (dùng method riêng cho change password)
+        boolean isValid = verificationService.verifyOtpCode(users.getEmail(), code);
+        if (!isValid) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Mã xác thực không đúng hoặc đã hết hạn");
         }
+        
         users.setPassword(passwordEncoder.encode(newPassword));
         userService.changePassword(users);
+        
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(users.getUsername(),newPassword)
+                new UsernamePasswordAuthenticationToken(users.getUsername(), newPassword)
         );
-        Users register = (Users) authentication.getPrincipal();
-        String jwt = tokenUtils.generateToken(register);
+        Users updatedUser = (Users) authentication.getPrincipal();
+        String jwt = tokenUtils.generateToken(updatedUser);
+        
         return ResponseEntity.ok(jwt);
     }
 
-    /**
-     * lay ma giam gia
-     */
     @GetMapping("/get-coupon")
     public ResponseEntity<?> getCoupon(@AuthenticationPrincipal Users users,
                                        @RequestParam("code") String code) {

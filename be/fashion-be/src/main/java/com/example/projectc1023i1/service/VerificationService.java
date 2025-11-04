@@ -1,11 +1,17 @@
 package com.example.projectc1023i1.service;
 
+import com.example.projectc1023i1.Dto.UserDTO;
 import com.example.projectc1023i1.Exception.BlockEmailException;
 import com.example.projectc1023i1.Exception.BlockEmailExceptionUnthorizi;
+import com.example.projectc1023i1.service.template.EmailTemplateService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,12 +23,23 @@ public class VerificationService {
     private static final int MAX_ATTEMPTS = 5; // Số lần gửi tối đa
     private static final long BLOCK_TIME = 10 * 60; // Thời gian khóa (10 phút)
     private static final long CODE_EXPIRATION = 10 * 60; // Mã hết hạn sau 10 phút
+    
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    
     @Autowired
     private JavaMailSender mailSender;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    @Autowired
+    private EmailTemplateService emailTemplateService;
 
-    public void sendVerificationCode(String email) {
+ 
+    public void sendVerificationCode(UserDTO userDTO) {
+        String email = userDTO.getEmail();
+        
         // Kiểm tra xem tài khoản có bị chặn không
         if (redisTemplate.hasKey("blocked:" + email)) {
             throw new BlockEmailException("Tài khoản của bạn đã bị chặn do gửi quá nhiều yêu cầu.");
@@ -41,20 +58,126 @@ public class VerificationService {
 
         // Tăng số lần gửi mã
         redisTemplate.opsForValue().set(attemptKey, String.valueOf(attempts + 1), CODE_EXPIRATION, TimeUnit.SECONDS);
+        
+        // Tạo và lưu OTP với key OTP_email
         String code = generateRandomCode();
-        redisTemplate.opsForValue().set("verification:" + email, code, CODE_EXPIRATION, TimeUnit.SECONDS);
+        String otpKey = "OTP_" + email;
+        redisTemplate.opsForValue().set(otpKey, code, CODE_EXPIRATION, TimeUnit.SECONDS);
+        
+        // Lưu UserDTO vào Redis (chỉ cho register)
+        try {
+            String userDataJson = objectMapper.writeValueAsString(userDTO);
+            String dataKey = "DATA_" + email;
+            redisTemplate.opsForValue().set(dataKey, userDataJson, CODE_EXPIRATION, TimeUnit.SECONDS);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Lỗi khi lưu dữ liệu user vào Redis", e);
+        }
+        
+        sendEmail(email, code);
+    }
+    
+    /**
+     * Gửi mã xác thực cho change password (không lưu UserDTO)
+     * 
+     * @param email Email của user
+     */
+    public void sendVerificationCodeForPasswordChange(String email) {
+        // Kiểm tra xem tài khoản có bị chặn không
+        if (redisTemplate.hasKey("blocked:" + email)) {
+            throw new BlockEmailException("Tài khoản của bạn đã bị chặn do gửi quá nhiều yêu cầu.");
+        }
+
+        // Đếm số lần gửi mã
+        String attemptKey = "attempts:" + email;
+        Integer attempts = Optional.ofNullable(redisTemplate.opsForValue().get(attemptKey))
+                .map(Integer::valueOf).orElse(0);
+
+        if (attempts >= MAX_ATTEMPTS) {
+            // Chặn tài khoản trong 10 phút
+            redisTemplate.opsForValue().set("blocked:" + email, "true", BLOCK_TIME, TimeUnit.SECONDS);
+            throw new BlockEmailExceptionUnthorizi("hiện tại email này đang bị chặn 10 phút bởi vì bạn đã gửi quá 5 lần xác nhận code");
+        }
+
+        // Tăng số lần gửi mã
+        redisTemplate.opsForValue().set(attemptKey, String.valueOf(attempts + 1), CODE_EXPIRATION, TimeUnit.SECONDS);
+        
+        // Tạo và lưu OTP với key OTP_email (không lưu UserDTO)
+        String code = generateRandomCode();
+        String otpKey = "OTP_" + email;
+        redisTemplate.opsForValue().set(otpKey, code, CODE_EXPIRATION, TimeUnit.SECONDS);
+        
         sendEmail(email, code);
     }
 
-    public boolean verifyCode(String email, String code) {
-        String storedCode = redisTemplate.opsForValue().get("verification:" + email);
+    public UserDTO getUserDTOFromRedis(String email) {
+        String dataKey = "DATA_" + email;
+        String userDataJson = redisTemplate.opsForValue().get(dataKey);
+        
+        if (userDataJson == null) {
+            return null;
+        }
+        
+        try {
+            return objectMapper.readValue(userDataJson, UserDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Lỗi khi đọc dữ liệu user từ Redis", e);
+        }
+    }
+
+    /**
+     * Verify OTP code (dùng cho change password)
+     * Chỉ verify OTP, không cần UserDTO
+     * 
+     * @param email Email của user
+     * @param code Mã OTP
+     * @return true nếu OTP hợp lệ, false nếu không hợp lệ
+     */
+    public boolean verifyOtpCode(String email, String code) {
+        String otpKey = "OTP_" + email;
+        String storedCode = redisTemplate.opsForValue().get(otpKey);
+        
         if (storedCode == null || !storedCode.equals(code)) {
             return false;
         }
-        redisTemplate.delete("verification:" + email);
+        
+        // Xóa OTP sau khi verify thành công
+        redisTemplate.delete(otpKey);
         redisTemplate.delete("attempts:" + email);
         redisTemplate.delete("blocked:" + email);
+        
         return true;
+    }
+
+
+    public UserDTO verifyCode(String email, String code) {
+        String otpKey = "OTP_" + email;
+        String storedCode = redisTemplate.opsForValue().get(otpKey);
+        
+        if (storedCode == null || !storedCode.equals(code)) {
+            return null;
+        }
+        
+        // Nếu mã hợp lệ, lấy UserDTO từ Redis
+        String dataKey = "DATA_" + email;
+        String userDataJson = redisTemplate.opsForValue().get(dataKey);
+        
+        if (userDataJson == null) {
+            return null;
+        }
+        
+        try {
+            UserDTO userDTO = objectMapper.readValue(userDataJson, UserDTO.class);
+            
+            // Xóa các key trong Redis sau khi verify thành công
+            redisTemplate.delete(otpKey);
+            redisTemplate.delete(dataKey);
+            redisTemplate.delete("attempts:" + email);
+            redisTemplate.delete("blocked:" + email);
+            
+            return userDTO;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Lỗi khi đọc dữ liệu user từ Redis", e);
+        }
     }
 
     private String generateRandomCode() {
@@ -63,12 +186,21 @@ public class VerificationService {
     }
 
     private void sendEmail(String to, String code) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("phamphuongtran2004@gmail.com"); // Thay bằng email thật
-        message.setTo(to);
-        message.setSubject("Mã xác thực của bạn");
-        message.setText("Mã xác thực của bạn: "+ code);
-        mailSender.send(message);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom("phamphuongtran2004@gmail.com");
+            helper.setTo(to);
+            helper.setSubject("Mã xác thực đăng ký tài khoản");
+            
+            // Lấy HTML template từ EmailTemplateService
+            String htmlContent = emailTemplateService.buildVerificationCodeTemplate(code);
+            helper.setText(htmlContent, true);
+            
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Lỗi khi gửi email: " + e.getMessage(), e);
+        }
     }
-
 }

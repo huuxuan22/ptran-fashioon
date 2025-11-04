@@ -44,10 +44,12 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const response = await loginService.login(data);
-
+      debugger;
       if (response.success) {
         // Đăng nhập thành công
-        const token = response.token || response.data;
+        // Backend trả về: { token, user }
+        const token = response.token || response.data?.token;
+        const userPrincipal = response.user || response.data?.user;
 
         // 1. Lưu token vào localStorage
         localStorage.setItem("token", token);
@@ -55,22 +57,21 @@ const Login = () => {
         // 2. Lưu token vào Redux reducer
         dispatch(setToken(token));
 
-        // 3. Lấy thông tin user từ API
-        try {
-          const userResponse = await dispatch(currentUser(token));
-
-          if (userResponse.success) {
-            const userPrincipal = userResponse.data;
-
-            // 4. Lưu user_principal vào localStorage
-            localStorage.setItem("user_principal", JSON.stringify(userPrincipal));
-
-            // 5. Lưu user_principal vào Redux reducer
-            dispatch(setUserPrincipal(userPrincipal));
+        // 3. Lưu user_principal vào localStorage và Redux
+        if (userPrincipal) {
+          localStorage.setItem("user_principal", JSON.stringify(userPrincipal));
+          dispatch(setUserPrincipal(userPrincipal));
+        } else {
+          // Fallback: Nếu không có user trong response, gọi API để lấy
+          try {
+            const userResponse = await dispatch(currentUser());
+            if (userResponse?.success && userResponse?.payload) {
+              localStorage.setItem("user_principal", JSON.stringify(userResponse.payload));
+              dispatch(setUserPrincipal(userResponse.payload));
+            }
+          } catch (userError) {
+            console.error("Error fetching user info:", userError);
           }
-        } catch (userError) {
-          console.error("Error fetching user info:", userError);
-          // Vẫn tiếp tục login nếu không lấy được user info
         }
 
         // 6. Hiển thị thông báo đăng nhập thành công
@@ -83,10 +84,10 @@ const Login = () => {
           draggable: true,
         });
 
-        // 7. Redirect hoặc điều hướng đến trang chủ (sau 1 giây để người dùng thấy toast)
+        // 7. Redirect hoặc điều hướng đến trang chủ (sau 1.5 giây để người dùng thấy toast)
         setTimeout(() => {
-          navigate("/");
-        }, 1000);
+          navigate("/", { replace: true });
+        }, 1500);
       } else {
         // Xử lý các loại lỗi khác nhau
         switch (response.errorType) {

@@ -58,10 +58,22 @@ const UserProfile = () => {
   const [orders, setOrders] = useState([]);
 
   const handleLogout = async () => {
-    await loginService.logOut(token).then((data) => {
+    try {
       localStorage.removeItem("token");
-      navigate("/login");
-    });
+      sessionStorage.removeItem("token");
+      localStorage.removeItem("user_principal");
+
+      await loginService.logOut(token).catch(() => {
+      });
+
+      navigate("/login", { replace: true });
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login", { replace: true });
+      window.location.reload();
+    }
   };
 
   const handleOrderClick = (order) => {
@@ -105,7 +117,7 @@ const UserProfile = () => {
     }
   };
 
-  
+
   useEffect(() => {
     loadData();
   }, [page]);
